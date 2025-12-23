@@ -2,6 +2,7 @@
   "expo": {
     "name": "curso-react-native-midudev",
     "slug": "curso-react-native-midudev",
+    "schema": "metacritic",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,10 +21,28 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.aldoparradev.cursoreactnativemidudev"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0461b8de-bbae-44b0-95af-1c6beacc15c9"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/0461b8de-bbae-44b0-95af-1c6beacc15c9"
     }
   }
 }
