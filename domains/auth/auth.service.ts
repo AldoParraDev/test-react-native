@@ -1,23 +1,28 @@
-type LoginResponse = {
-  token: string;
-  user: {
-    id: string;
-    email: string;
-  };
+import api from "../../shared/lib/api";
+
+export const loginSession = async (username: string, password: string) => {
+  try {
+    const response = await api.post("/auth/login", {
+      user_name: username,
+      password,
+    });
+
+    return {
+      success: true,
+      token: response.data.access_token,
+    };
+  } catch (error) {
+    console.log("LOGIN ERROR:", error);
+
+    let message = "Error al iniciar sesión";
+
+    if (error.response?.data?.error) {
+      message = error.response.data.error;
+    }
+
+    return {
+      success: false,
+      error: message,
+    };
+  }
 };
-
-export async function loginRequest(
-  email: string,
-  password: string
-): Promise<LoginResponse> {
-  // SIMULADO por ahora
-  await new Promise((r) => setTimeout(r, 1000));
-
-  return {
-    token: "fake-jwt-token",
-    user: {
-      id: "1",
-      email,
-    },
-  };
-}

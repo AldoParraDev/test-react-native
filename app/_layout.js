@@ -19,9 +19,13 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!isLoading) {
-      SplashScreen.hideAsync();
+      SplashScreen.hideAsync().catch(() => {});
     }
   }, [isLoading]);
+
+  if (isLoading) {
+    return null; // splash visible
+  }
 
   return (
     <View
