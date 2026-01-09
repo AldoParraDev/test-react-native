@@ -1,16 +1,12 @@
 import { View, Text, FlatList, StyleSheet, RefreshControl } from "react-native";
 import { router } from "expo-router";
-import { useAuthStore } from "../../domains/auth/auth.store";
 import { getTravelsToday } from "../../domains/boarding/boarding.service";
 import { showMessage } from "../../shared/utils/showMessage";
 import { useEffect, useState } from "react";
 import TravelCard from "../../domains/boarding/components/TravelCard";
-import PrimaryButton from "../../shared/components/PrimaryButton";
 import TravelCardSkeleton from "../../shared/components/TravelCardSkeleton";
 
 export default function BoardingScreen() {
-  const logout = useAuthStore((s) => s.logout);
-
   const [listTravels, setListTravels] = useState([]);
 
   const [loading, setLoading] = useState(false);
@@ -42,14 +38,11 @@ export default function BoardingScreen() {
     loadTravels();
   }, []);
 
-  const handleLogout = async () => {
-    await logout();
-    router.replace("/login");
-  };
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Abordaje Express</Text>
+      <View style={{ alignItems: "center", justifyContent: "center" }}>
+        <Text style={styles.title}>Abordaje Express</Text>
+      </View>
       {/* LISTADO AQUI */}
       <FlatList
         data={loading ? Array.from({ length: 3 }) : listTravels}
@@ -84,13 +77,6 @@ export default function BoardingScreen() {
           )
         }
       />
-      <View style={styles.footer}>
-        <PrimaryButton
-          title="Escanear QR"
-          onPress={() => router.push("/scan")}
-        />
-        <PrimaryButton title="Cerrar sesión" onPress={handleLogout} />
-      </View>
     </View>
   );
 }
@@ -110,9 +96,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 40,
     color: "#666",
-  },
-  footer: {
-    gap: 12,
-    marginTop: 12,
   },
 });

@@ -79,7 +79,7 @@ export default function TravelDetailScreen() {
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <Pressable onPress={() => router.back()} style={styles.backButton}>
-            <Feather name="chevron-left" size={20} color="#2563eb" />
+            <Feather name="chevron-left" size={22} color="#2563eb" />
             <Text style={styles.backButtonText}>Atras</Text>
           </Pressable>
 
@@ -118,7 +118,7 @@ export default function TravelDetailScreen() {
 
       <FlatList
         data={passengers}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.passenger_id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
         refreshControl={
@@ -133,6 +133,16 @@ export default function TravelDetailScreen() {
           <View style={styles.passengerCard}>
             <Text style={styles.passengerName}>{item.full_name}</Text>
             <Text style={styles.passengerSeat}>Asiento {item.seat_number}</Text>
+            <Text
+              style={[
+                styles.passengerStatus,
+                item.boarding_statuss
+                  ? styles.passengerStatusBoarded
+                  : styles.passengerStatusPending,
+              ]}
+            >
+              {item.boarding_status ? "Abordado" : "Pendiente"}
+            </Text>
           </View>
         )}
         ListEmptyComponent={
@@ -213,6 +223,18 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontSize: 12,
   },
+  passengerStatus: {
+    position: "absolute",
+    top: 14,
+    right: 14,
+    fontWeight: "600",
+  },
+  passengerStatusBoarded: {
+    color: "#16a34a",
+  },
+  passengerStatusPending: {
+    color: "#dc2626",
+  },
   empty: {
     textAlign: "center",
     marginTop: 40,
@@ -238,7 +260,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: "#2563eb",
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "500",
   },
 });
