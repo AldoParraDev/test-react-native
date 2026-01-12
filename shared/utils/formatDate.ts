@@ -15,3 +15,16 @@ export const formatDateDDMMYYYY = (date: string) => {
 
   return `${day}/${month}/${year}`;
 };
+
+export const formatTime12hUTC = (date: string): string => {
+  const d = new Date(date);
+
+  let hours = d.getUTCHours();
+  const minutes = String(d.getUTCMinutes()).padStart(2, "0");
+
+  const period = hours >= 12 ? "PM" : "AM";
+
+  hours = hours % 12 || 12;
+
+  return `${hours}:${minutes} ${period}`;
+};

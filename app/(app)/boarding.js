@@ -5,12 +5,29 @@ import { showMessage } from "../../shared/utils/showMessage";
 import { useEffect, useState } from "react";
 import TravelCard from "../../domains/boarding/components/TravelCard";
 import TravelCardSkeleton from "../../shared/components/TravelCardSkeleton";
+import { BoardingHeader } from "../../domains/boarding/components/BoardingHeader";
+import SearchInput from "../../shared/components/SearchInput";
+import { Feather } from "@expo/vector-icons";
 
 export default function BoardingScreen() {
   const [listTravels, setListTravels] = useState([]);
 
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [search, setSearch] = useState("");
+
+  const filteredTravels = listTravels.filter((travel) => {
+    const q = search.toLowerCase();
+
+    return (
+      travel.location_departure.toLowerCase().includes(q) ||
+      travel.location_arrival.toLowerCase().includes(q) ||
+      travel.route_alias?.toLowerCase().includes(q) ||
+      travel.driver_name?.toLowerCase().includes(q) ||
+      travel.vehicle_plate?.toLowerCase().includes(q)
+    );
+  });
 
   const loadTravels = async (isRefresh = false) => {
     try {
@@ -27,6 +44,8 @@ export default function BoardingScreen() {
         return;
       }
 
+      console.log(response.data.travels);
+
       setListTravels(response.data.travels);
     } finally {
       setLoading(false);
@@ -39,22 +58,23 @@ export default function BoardingScreen() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <View style={{ alignItems: "center", justifyContent: "center" }}>
-        <Text style={styles.title}>Abordaje Express</Text>
-      </View>
-      {/* LISTADO AQUI */}
+    <View style={{ flex: 1 }}>
+      <BoardingHeader onRefresh={loadTravels} />
+
       <FlatList
-        data={loading ? Array.from({ length: 3 }) : listTravels}
+        data={loading ? Array.from({ length: 3 }) : filteredTravels}
         keyExtractor={(_, index) => index.toString()}
+        ListHeaderComponent={
+          <SearchInput value={search} onChange={setSearch} />
+        }
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 4, paddingBottom: 100 }}
+        contentContainerStyle={styles.list}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => loadTravels(true)}
-            colors={["#2563eb"]} // Android
-            tintColor="#2563eb" // iOS
+            colors={["#2563eb"]}
+            tintColor="#2563eb"
           />
         }
         renderItem={({ item }) =>
@@ -69,9 +89,10 @@ export default function BoardingScreen() {
         }
         ListEmptyComponent={
           !loading && (
-            <View style={{ alignItems: "center", marginTop: 80 }}>
-              <Text style={{ color: "#6b7280" }}>
-                No hay viajes programados para hoy
+            <View style={{ marginTop: 60, alignItems: "center" }}>
+              <Feather name="search" size={32} color="#d1d5db" />
+              <Text style={{ marginTop: 8, color: "#6b7280" }}>
+                No se encontraron viajes
               </Text>
             </View>
           )
@@ -82,19 +103,18 @@ export default function BoardingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  list: {
     padding: 16,
-    backgroundColor: "#f9fafb",
+    paddingBottom: 100,
+    backgroundColor: "#f8fafc", // 👈 clave visual
   },
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    marginBottom: 16,
-  },
+
   empty: {
-    textAlign: "center",
-    marginTop: 40,
-    color: "#666",
+    alignItems: "center",
+    marginTop: 80,
+  },
+
+  emptyText: {
+    color: "#6b7280",
   },
 });

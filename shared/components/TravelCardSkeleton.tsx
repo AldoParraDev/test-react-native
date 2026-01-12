@@ -1,46 +1,29 @@
-import { View, StyleSheet, Animated, Dimensions } from "react-native";
-import { useEffect, useRef } from "react";
-
-const { width } = Dimensions.get("window");
+import { View, StyleSheet } from "react-native";
 
 export default function TravelCardSkeleton() {
-  const shimmerAnim = useRef(new Animated.Value(-width)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.timing(shimmerAnim, {
-        toValue: width,
-        duration: 1200,
-        useNativeDriver: true,
-      })
-    ).start();
-  }, [shimmerAnim]);
-
   return (
     <View style={styles.card}>
-      <View style={styles.lineLarge} />
-      <View style={styles.lineSmall} />
-
-      <View style={styles.row}>
-        <View style={styles.icon} />
-        <View style={styles.lineMedium} />
+      {/* Header */}
+      <View style={styles.topRow}>
+        <View style={styles.code} />
+        <View style={styles.capacity} />
       </View>
 
-      <View style={styles.row}>
-        <View style={styles.icon} />
-        <View style={styles.lineMedium} />
+      {/* Route */}
+      <View style={styles.routeBlock}>
+        <View style={styles.city} />
+        <View style={styles.arrow} />
+        <View style={styles.city} />
       </View>
 
-      {/* SHIMMER */}
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          styles.shimmer,
-          {
-            transform: [{ translateX: shimmerAnim }],
-          },
-        ]}
-      />
+      {/* Meta */}
+      <View style={styles.metaRow}>
+        <View style={styles.metaItem} />
+        <View style={styles.metaItem} />
+      </View>
+
+      {/* Action */}
+      <View style={styles.button} />
     </View>
   );
 }
@@ -48,50 +31,68 @@ export default function TravelCardSkeleton() {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
+    borderRadius: 16,
     padding: 16,
-    borderRadius: 14,
-    marginBottom: 12,
+    marginBottom: 16,
     elevation: 2,
-    overflow: "hidden",
   },
-  lineLarge: {
-    height: 16,
-    width: "90%",
-    backgroundColor: "#e5e7eb",
-    borderRadius: 6,
-    marginBottom: 8,
-  },
-  lineSmall: {
-    height: 12,
-    width: "55%",
-    backgroundColor: "#e5e7eb",
-    borderRadius: 6,
-    marginBottom: 12,
-  },
-  row: {
+
+  topRow: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 8,
+  },
+
+  code: {
+    width: 80,
+    height: 14,
+    borderRadius: 6,
+    backgroundColor: "#e5e7eb",
+  },
+
+  capacity: {
+    width: 70,
+    height: 22,
+    borderRadius: 999,
+    backgroundColor: "#e5e7eb",
+  },
+
+  routeBlock: {
+    marginTop: 12,
     gap: 8,
   },
-  icon: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: "#e5e7eb",
-  },
-  lineMedium: {
-    height: 14,
-    width: "60%",
-    backgroundColor: "#e5e7eb",
+
+  city: {
+    width: "70%",
+    height: 18,
     borderRadius: 6,
+    backgroundColor: "#e5e7eb",
   },
-  shimmer: {
-    position: "absolute",
-    top: 0,
-    left: -100,
-    height: "100%",
-    width: 100,
-    backgroundColor: "rgba(255,255,255,0.35)",
+
+  arrow: {
+    width: 24,
+    height: 14,
+    borderRadius: 6,
+    backgroundColor: "#e5e7eb",
+  },
+
+  metaRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 16,
+  },
+
+  metaItem: {
+    width: "45%",
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: "#e5e7eb",
+  },
+
+  button: {
+    marginTop: 16,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: "#e5e7eb",
   },
 });
