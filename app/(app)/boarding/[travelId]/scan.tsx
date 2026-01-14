@@ -6,6 +6,7 @@ import {
   Pressable,
   Animated,
   Easing,
+  ActivityIndicator,
 } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useEffect, useRef, useState } from "react";
@@ -13,22 +14,36 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { Audio } from "expo-av";
+import {
+  getPassengerById,
+  validateQrTransaction,
+} from "../../../../domains/boarding/boarding.service";
 
 const SCAN_SIZE = 240;
+
+type ModalType = "success" | "error" | "warning";
+
+interface ModalState {
+  type: ModalType;
+  title: string;
+  message?: string;
+  passenger?: any;
+}
 
 export default function ScanScreen() {
   const { travelId } = useLocalSearchParams<{ travelId: string }>();
 
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
-  const [qrData, setQrData] = useState<string | null>(null);
-
   const [torch, setTorch] = useState(false);
-
   const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [modal, setModal] = useState<ModalState | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState("Validando código QR...");
 
   const scanLineAnim = useRef(new Animated.Value(0)).current;
 
+  /* -------------------- Animación scan -------------------- */
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -49,6 +64,7 @@ export default function ScanScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* -------------------- Sonido -------------------- */
   useEffect(() => {
     let mounted = true;
 
@@ -58,9 +74,7 @@ export default function ScanScreen() {
         { shouldPlay: false }
       );
 
-      if (mounted) {
-        setSound(sound);
-      }
+      if (mounted) setSound(sound);
     };
 
     loadSound();
@@ -72,9 +86,7 @@ export default function ScanScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!permission) {
-    return <View />;
-  }
+  if (!permission) return <View />;
 
   if (!permission.granted) {
     return (
@@ -89,31 +101,99 @@ export default function ScanScreen() {
     );
   }
 
-  const handleBarcodeScanned = async ({ data }) => {
-    if (scanned || qrData) return;
+  /* -------------------- ESCANEO -------------------- */
+  const handleBarcodeScanned = async ({ data }: { data: string }) => {
+    if (scanned || loading) return;
 
     setScanned(true);
-    setQrData(data);
+    setLoadingText("Validando código QR...");
+    setLoading(true);
 
     try {
-      await sound?.replayAsync();
-    } catch (e) {
-      // fail silencioso (nunca romper escaneo)
-      console.log("Error reproduciendo sonido:", e);
+      const response = await validateQrTransaction(data, travelId);
+
+      if (!response.success) {
+        setLoading(false);
+
+        switch (response.error?.code) {
+          case "QR_TRAVEL_MISMATCH":
+            setModal({
+              type: "error",
+              title: "QR inválido",
+              message: "Este código no pertenece a este viaje",
+            });
+            break;
+
+          case "ALREADY_ONBOARD":
+            setModal({
+              type: "warning",
+              title: "Pasajero ya abordado",
+              message: "Este pasajero ya fue registrado como abordado",
+            });
+            break;
+
+          default:
+            setModal({
+              type: "error",
+              title: "Error",
+              message: "No se pudo validar el código QR",
+            });
+        }
+        return;
+      }
+
+      // ✔ QR válido
+      setLoadingText("Obteniendo información del pasajero...");
+
+      const passengerResponse = await getPassengerById(
+        response.data.passenger_id
+      );
+
+      setLoading(false);
+
+      if (!passengerResponse.success) {
+        setModal({
+          type: "error",
+          title: "Error",
+          message: "No se pudo obtener la información del pasajero",
+        });
+        return;
+      }
+
+      setModal({
+        type: "success",
+        title: "Abordaje exitoso",
+        passenger: passengerResponse.data,
+      });
+
+      try {
+        await sound?.replayAsync();
+      } catch {}
+    } catch {
+      setLoading(false);
+      setModal({
+        type: "error",
+        title: "Error",
+        message: "Ocurrió un error inesperado",
+      });
     }
+  };
+
+  const closeModal = () => {
+    setModal(null);
+    setTimeout(() => setScanned(false), 400);
   };
 
   return (
     <>
       <CameraView
         style={StyleSheet.absoluteFillObject}
-        barcodeScannerSettings={{
-          barcodeTypes: ["qr"],
-        }}
+        barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
         onBarcodeScanned={handleBarcodeScanned}
         enableTorch={torch}
       />
 
+      {/* APP BAR */}
       <View style={styles.appBar}>
         <Pressable onPress={() => router.back()}>
           <Feather name="arrow-left" size={22} color="#374151" />
@@ -130,66 +210,113 @@ export default function ScanScreen() {
         </Pressable>
       </View>
 
-      {/* CAPA DE OVERLAY */}
+      {/* OVERLAY */}
       <View style={styles.overlay}>
         <View style={styles.mask} />
 
         <View style={styles.middleRow}>
           <View style={styles.mask} />
-
-          {/* SCAN BOX */}
           <View style={styles.scanBox}>
             <View style={styles.scanBorder} />
-
-            {/* SCAN LINE */}
             <Animated.View
               style={[
                 styles.scanLine,
-                {
-                  transform: [{ translateY: scanLineAnim }],
-                },
+                { transform: [{ translateY: scanLineAnim }] },
               ]}
             />
           </View>
-
           <View style={styles.mask} />
         </View>
 
         <View style={styles.mask} />
-
         <Text style={styles.helperText}>
           Enfoca el código QR dentro del recuadro
         </Text>
-
-        <Pressable onPress={() => router.back()} style={styles.btnClose}>
-          <Text style={styles.actionText}>
-            <Feather name="x" size={28} color="#fff" />
-          </Text>
-        </Pressable>
       </View>
 
-      <Modal visible={!!qrData} transparent animationType="fade">
+      {loading && (
+        <View style={styles.loaderOverlay}>
+          <View style={styles.loaderCard}>
+            <ActivityIndicator size="large" color="#22c55e" />
+            <Text style={styles.loaderText}>{loadingText}</Text>
+          </View>
+        </View>
+      )}
+
+      {/* MODAL RESULTADO */}
+      <Modal visible={!!modal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-            <Text style={styles.title}>✅ Usuario verificado</Text>
-            <Text style={styles.subtitle}>Código: {qrData}</Text>
+            {/* HEADER */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalHeaderTitle}>Boarding Status</Text>
 
-            <Pressable
-              style={styles.confirmBtn}
-              onPress={async () => {
-                // 1. Aquí irá la llamada a la API
-                // await confirmBoarding(qrData);
+              <Pressable onPress={closeModal}>
+                <Feather name="x" size={22} color="#6b7280" />
+              </Pressable>
+            </View>
 
-                // 2. Cerramos modal
-                setQrData(null);
-
-                // 3. Rehabilitamos escaneo (con pequeño delay)
-                setTimeout(() => {
-                  setScanned(false);
-                }, 500);
-              }}
+            {/* ICONO */}
+            <View
+              style={[
+                styles.iconWrapper,
+                modal?.type === "success" && styles.iconSuccess,
+                modal?.type === "warning" && styles.iconWarning,
+                modal?.type === "error" && styles.iconError,
+              ]}
             >
-              <Text style={styles.confirmText}>Confirmar abordaje</Text>
+              <MaterialCommunityIcons
+                name={
+                  modal?.type === "success"
+                    ? "check"
+                    : modal?.type === "warning"
+                      ? "alert"
+                      : "close"
+                }
+                size={42}
+                color="#fff"
+              />
+            </View>
+
+            {/* TITULO */}
+            <Text style={styles.modalTitle}>{modal?.title}</Text>
+
+            {/* SUBTITULO */}
+            <Text style={styles.modalSubtitle}>
+              {modal?.type === "success"
+                ? "SCAN CONFIRMED"
+                : modal?.type === "warning"
+                  ? "CHECK REQUIRED"
+                  : "SCAN FAILED"}
+            </Text>
+
+            {/* PASAJERO */}
+            {modal?.passenger && (
+              <View style={styles.passengerCard}>
+                <Text style={styles.passengerName}>
+                  {modal.passenger.full_name}
+                </Text>
+
+                <View style={styles.passengerMeta}>
+                  {modal.passenger.seat && (
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>
+                        Seat: {modal.passenger.seat}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            )}
+
+            {/* MENSAJE ERROR */}
+            {modal?.message && (
+              <Text style={styles.modalMessage}>{modal.message}</Text>
+            )}
+
+            {/* BOTON */}
+            <Pressable style={styles.modalBtn} onPress={closeModal}>
+              <Text style={styles.modalBtnText}>OK →</Text>
             </Pressable>
           </View>
         </View>
@@ -254,7 +381,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 16,
     position: "absolute",
-    bottom: 240,
+    bottom: 150,
     left: 16,
     right: 16,
   },
@@ -331,4 +458,116 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   appBarTitle: { fontSize: 16, fontWeight: "600" },
+  successBorder: { borderTopWidth: 6, borderTopColor: "#22c55e" },
+  errorBorder: { borderTopWidth: 6, borderTopColor: "#ef4444" },
+  warningBorder: { borderTopWidth: 6, borderTopColor: "#f59e0b" },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 12,
+  },
+  passengerName: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  loaderOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 20,
+  },
+  loaderCard: {
+    backgroundColor: "#fff",
+    paddingVertical: 28,
+    paddingHorizontal: 32,
+    borderRadius: 20,
+    alignItems: "center",
+    width: 260,
+  },
+  loaderText: {
+    marginTop: 16,
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#374151",
+    textAlign: "center",
+  },
+  modalHeader: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  modalHeaderTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  iconWrapper: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  iconSuccess: {
+    backgroundColor: "#22c55e",
+  },
+  iconWarning: {
+    backgroundColor: "#f59e0b",
+  },
+  iconError: {
+    backgroundColor: "#ef4444",
+  },
+  modalSubtitle: {
+    fontSize: 13,
+    letterSpacing: 1.2,
+    color: "#22c55e",
+    marginBottom: 20,
+  },
+  passengerCard: {
+    width: "100%",
+    backgroundColor: "#f9fafb",
+    borderRadius: 16,
+    padding: 16,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  passengerMeta: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  badge: {
+    backgroundColor: "#dcfce7",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  badgeText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#166534",
+  },
+  modalMessage: {
+    fontSize: 15,
+    textAlign: "center",
+    color: "#374151",
+    marginBottom: 16,
+  },
+  modalBtn: {
+    marginTop: 8,
+    backgroundColor: "#22c55e",
+    width: "100%",
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: "center",
+  },
+  modalBtnText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+  },
 });

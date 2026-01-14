@@ -44,8 +44,6 @@ export default function BoardingScreen() {
         return;
       }
 
-      console.log(response.data.travels);
-
       setListTravels(response.data.travels);
     } finally {
       setLoading(false);

@@ -17,8 +17,6 @@ export const getTravelsToday = async () => {
       data: response.data,
     };
   } catch (error: any) {
-    console.log("GET TRAVELS ERROR:", error);
-
     let message = "Error al obtener los viajes";
 
     if (error.response?.data?.error) {
@@ -42,8 +40,6 @@ export const getTravelDetail = async (travelId: string) => {
       data: response.data,
     };
   } catch (error: any) {
-    console.log("GET TRAVEL DETAIL ERROR:", error);
-
     let message = "Error al obtener el detalle del viaje";
 
     if (error.response?.data?.error) {
@@ -67,8 +63,6 @@ export const getPassengersByTravel = async (travelId: string) => {
       data: response.data,
     };
   } catch (error: any) {
-    console.log("GET PASSENGERS ERROR:", error);
-
     let message = "Error al obtener los pasajeros";
 
     if (error.response?.data?.error) {
@@ -78,6 +72,52 @@ export const getPassengersByTravel = async (travelId: string) => {
     return {
       success: false,
       error: message,
+    };
+  }
+};
+
+// OBTENER PASAJERO POR ID
+export const getPassengerById = async (idPassenger: string) => {
+  try {
+    const response = await api.get(`/passenger/${idPassenger}`);
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: any) {
+    let message = "Error al obtener el pasajero";
+
+    if (error.response?.data?.error) {
+      message = error.response.data.error;
+    }
+
+    return {
+      success: false,
+      error: message,
+    };
+  }
+};
+
+// VALIDAR QR
+export const validateQrTransaction = async (
+  code: string,
+  travel_id: string
+) => {
+  try {
+    const response = await api.post(`/qr-transaction/validate`, {
+      code,
+      travel_id,
+    });
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.response?.data?.error,
     };
   }
 };

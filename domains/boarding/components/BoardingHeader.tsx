@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
   },
 
   headerTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "600",
   },
 

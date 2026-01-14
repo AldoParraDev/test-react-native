@@ -12,8 +12,6 @@ export const loginSession = async (username: string, password: string) => {
       token: response.data.access_token,
     };
   } catch (error) {
-    console.log("LOGIN ERROR:", error);
-
     let message = "Error al iniciar sesión";
 
     if (error.response?.data?.error) {
