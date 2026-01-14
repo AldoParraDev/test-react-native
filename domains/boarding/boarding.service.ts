@@ -105,7 +105,7 @@ export const validateQrTransaction = async (
   travel_id: string
 ) => {
   try {
-    const response = await api.post(`/qr-transaction/validate`, {
+    const response = await api.post(`/passenger/boarding-status`, {
       code,
       travel_id,
     });
