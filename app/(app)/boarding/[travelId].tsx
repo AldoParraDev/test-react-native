@@ -8,8 +8,8 @@ import {
   Pressable,
   TextInput,
 } from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
 import {
   getTravelDetail,
   getPassengersByTravel,
@@ -59,10 +59,17 @@ export default function TravelDetailScreen() {
     }
   };
 
-  useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // useEffect(() => {
+  //   loadData();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+  );
 
   const filteredPassengers = useMemo(() => {
     if (!search) return passengers;
@@ -93,7 +100,7 @@ export default function TravelDetailScreen() {
           <Feather name="arrow-left" size={22} color="#374151" />
         </Pressable>
 
-        <Text style={styles.appBarTitle}>Trip Details</Text>
+        <Text style={styles.appBarTitle}>Detalles del viaje</Text>
 
         <Pressable onPress={() => loadData(true)}>
           <Feather name="refresh-cw" size={20} color="#2563eb" />
@@ -118,7 +125,7 @@ export default function TravelDetailScreen() {
             <View style={styles.heroCard}>
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>
-                  {travel?.type_service?.toUpperCase() || "SERVICE"}
+                  {travel?.type_service?.toUpperCase() || "SERVICIO"}
                 </Text>
               </View>
 
@@ -136,16 +143,16 @@ export default function TravelDetailScreen() {
             {/* INFO */}
             <View style={styles.infoGrid}>
               <View style={styles.infoBox}>
-                <Text style={styles.infoLabel}>VEHICLE ID</Text>
+                <Text style={styles.infoLabel}>ID DEL VEHÍCULO</Text>
                 <Text style={styles.infoValue}>
-                  {travel?.vehicle_name || "N/A"}
+                  {travel?.vehicle_name || "No disponible"}
                 </Text>
               </View>
 
               <View style={styles.infoBox}>
-                <Text style={styles.infoLabel}>DRIVER</Text>
+                <Text style={styles.infoLabel}>CONDUCTOR</Text>
                 <Text style={styles.infoValue}>
-                  {travel?.driver_name || "N/A"}
+                  {travel?.driver_name || "No disponible"}
                 </Text>
               </View>
             </View>
@@ -153,9 +160,9 @@ export default function TravelDetailScreen() {
             {/* BOARDING STATUS */}
             <View style={styles.boardingHeader}>
               <View>
-                <Text style={styles.boardingTitle}>Boarding Status</Text>
+                <Text style={styles.boardingTitle}>Estado de abordaje</Text>
                 <Text style={styles.boardingSubtitle}>
-                  {total - boardedCount} passengers remaining
+                  {total - boardedCount} pasajeros pendientes
                 </Text>
               </View>
 
@@ -175,7 +182,7 @@ export default function TravelDetailScreen() {
             <View style={styles.searchBox}>
               <Feather name="search" size={18} color="#9ca3af" />
               <TextInput
-                placeholder="Search name or seat number..."
+                placeholder="Buscar nombre o número de asiento..."
                 value={search}
                 onChangeText={setSearch}
                 style={styles.searchInput}
@@ -201,7 +208,9 @@ export default function TravelDetailScreen() {
 
             <View style={{ flex: 1 }}>
               <Text style={styles.passengerName}>{item.full_name}</Text>
-              <Text style={styles.passengerSeat}>Seat: {item.seat_number}</Text>
+              <Text style={styles.passengerSeat}>
+                Asiento: {item.seat_number}
+              </Text>
             </View>
 
             <View
@@ -220,13 +229,13 @@ export default function TravelDetailScreen() {
                     : styles.statusPendingText,
                 ]}
               >
-                {item.boarding_status ? "BOARDED" : "PENDING"}
+                {item.boarding_status ? "ABORDADO" : "PENDIENTE"}
               </Text>
             </View>
           </View>
         )}
         ListEmptyComponent={
-          <Text style={styles.empty}>No passengers found</Text>
+          <Text style={styles.empty}>No se encontraron pasajeros</Text>
         }
       />
 
@@ -237,7 +246,7 @@ export default function TravelDetailScreen() {
           onPress={() => router.push(`/boarding/${travelId}/scan`)}
         >
           <MaterialIcons name="qr-code-scanner" size={22} color="#fff" />
-          <Text style={styles.ctaText}>Start Boarding</Text>
+          <Text style={styles.ctaText}>Iniciar abordaje</Text>
         </Pressable>
       </View>
     </View>

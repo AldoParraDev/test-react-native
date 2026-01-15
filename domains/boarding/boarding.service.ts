@@ -12,6 +12,8 @@ export const getTravelsToday = async () => {
     const todayFormatted = formatDateYYYYMMDD(new Date());
     const response = await api.get(`/travel?date=${todayFormatted}`);
 
+    console.log("url de api::", `/travel?date=${todayFormatted}`);
+
     return {
       success: true,
       data: response.data,
@@ -34,6 +36,8 @@ export const getTravelsToday = async () => {
 export const getTravelDetail = async (travelId: string) => {
   try {
     const response = await api.get(`/travel/${travelId}`);
+
+    console.log("url de api 2::", `/travel/${travelId}`);
 
     return {
       success: true,
@@ -104,8 +108,10 @@ export const validateQrTransaction = async (
   code: string,
   travel_id: string
 ) => {
+  console.log("Validando QR con código:", code, "y travel_id:", travel_id);
+
   try {
-    const response = await api.post(`/passenger/boarding-status`, {
+    const response = await api.patch(`/passenger/boarding-status`, {
       code,
       travel_id,
     });
@@ -115,6 +121,8 @@ export const validateQrTransaction = async (
       data: response.data,
     };
   } catch (error: any) {
+    console.log("ERROR:::", error);
+
     return {
       success: false,
       error: error.response?.data?.error,

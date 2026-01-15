@@ -10,6 +10,7 @@ import {
   TextInput,
   UIManager,
   View,
+  Image,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../../domains/auth/auth.store";
@@ -98,10 +99,14 @@ export default function LoginPage() {
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="on-drag"
         >
+          <Image
+            source={require("../../assets/icon.png")}
+            style={styles.logo}
+          />
           <Text style={styles.title}>Inicio de sesión</Text>
 
           <TextInput
-            placeholder="Username"
+            placeholder="Nombre de usuario"
             value={username}
             onChangeText={setUsername}
             autoCapitalize="none"
@@ -110,7 +115,7 @@ export default function LoginPage() {
 
           <View style={styles.passwordContainer}>
             <TextInput
-              placeholder="Password"
+              placeholder="Contraseña"
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
@@ -149,6 +154,13 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: "center",
     paddingBottom: 40, // Espacio extra abajo
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    alignSelf: "center",
+    marginBottom: 0,
+    resizeMode: "contain",
   },
   title: {
     fontSize: 24,

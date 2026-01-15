@@ -146,8 +146,10 @@ export default function ScanScreen() {
       setLoadingText("Obteniendo información del pasajero...");
 
       const passengerResponse = await getPassengerById(
-        response.data.passenger_id
+        response.data.data.passenger_id
       );
+
+      console.log("Datos del pasajero::", passengerResponse);
 
       setLoading(false);
 
@@ -199,7 +201,7 @@ export default function ScanScreen() {
           <Feather name="arrow-left" size={22} color="#374151" />
         </Pressable>
 
-        <Text style={styles.appBarTitle}>Scan ticket</Text>
+        <Text style={styles.appBarTitle}>Escanear boleto</Text>
 
         <Pressable onPress={() => setTorch(!torch)}>
           <MaterialCommunityIcons
@@ -247,15 +249,6 @@ export default function ScanScreen() {
       <Modal visible={!!modal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-            {/* HEADER */}
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalHeaderTitle}>Boarding Status</Text>
-
-              <Pressable onPress={closeModal}>
-                <Feather name="x" size={22} color="#6b7280" />
-              </Pressable>
-            </View>
-
             {/* ICONO */}
             <View
               style={[
@@ -284,10 +277,10 @@ export default function ScanScreen() {
             {/* SUBTITULO */}
             <Text style={styles.modalSubtitle}>
               {modal?.type === "success"
-                ? "SCAN CONFIRMED"
+                ? "ESCANEO EXITOSO"
                 : modal?.type === "warning"
-                  ? "CHECK REQUIRED"
-                  : "SCAN FAILED"}
+                  ? "YA ABORDADO"
+                  : "ESCANEO FALLIDO"}
             </Text>
 
             {/* PASAJERO */}
@@ -301,7 +294,7 @@ export default function ScanScreen() {
                   {modal.passenger.seat && (
                     <View style={styles.badge}>
                       <Text style={styles.badgeText}>
-                        Seat: {modal.passenger.seat}
+                        Asiento: {modal.passenger.seat}
                       </Text>
                     </View>
                   )}
@@ -316,7 +309,7 @@ export default function ScanScreen() {
 
             {/* BOTON */}
             <Pressable style={styles.modalBtn} onPress={closeModal}>
-              <Text style={styles.modalBtnText}>OK →</Text>
+              <Text style={styles.modalBtnText}>Aceptar →</Text>
             </Pressable>
           </View>
         </View>

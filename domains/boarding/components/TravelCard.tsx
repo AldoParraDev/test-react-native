@@ -38,7 +38,7 @@ export default function TravelCard({ travel, onPress }: Props) {
       {/* Meta */}
       <View style={styles.metaRow}>
         <View>
-          <Text style={styles.metaLabel}>DEPARTURE DATE</Text>
+          <Text style={styles.metaLabel}>FECHA DE SALIDA</Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
             <View>
               <Feather name="calendar" size={14} color="#6b7280" />
@@ -50,7 +50,7 @@ export default function TravelCard({ travel, onPress }: Props) {
         </View>
 
         <View>
-          <Text style={styles.metaLabel}>DEPARTURE TIME</Text>
+          <Text style={styles.metaLabel}>HORA DE SALIDA</Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
             <View>
               <Feather name="clock" size={14} color="#6b7280" />
@@ -74,7 +74,7 @@ export default function TravelCard({ travel, onPress }: Props) {
         <Feather name="grid" size={20} color={isActive ? "#fff" : "#9ca3af"} />
 
         <Text style={[styles.actionText, !isActive && styles.disabledText]}>
-          {isActive ? "Manage Boarding" : "Not Started"}
+          {isActive ? "Gestionar abordaje" : "No iniciado"}
         </Text>
       </Pressable>
     </View>
