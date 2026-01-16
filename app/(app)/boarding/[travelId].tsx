@@ -15,11 +15,13 @@ import {
   getPassengersByTravel,
 } from "../../../domains/boarding/boarding.service";
 import { showMessage } from "../../../shared/utils/showMessage";
+import { useTheme } from "../../../shared/hooks/useTheme";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import { formatDateDDMMYYYY } from "../../../shared/utils/formatDate";
 
 export default function TravelDetailScreen() {
   const { travelId } = useLocalSearchParams();
+  const { colors } = useTheme();
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -84,26 +86,182 @@ export default function TravelDetailScreen() {
   const total = passengers.length;
   const progress = total ? boardedCount / total : 0;
 
+  const dynamicStyles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    center: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: colors.background,
+    },
+    appBar: {
+      height: 56,
+      paddingHorizontal: 16,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      borderBottomWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.background,
+    },
+    appBarTitle: { fontSize: 16, fontWeight: "600", color: colors.text },
+    heroCard: {
+      backgroundColor: colors.surface,
+      margin: 16,
+      borderRadius: 20,
+      padding: 16,
+    },
+    badge: {
+      backgroundColor: colors.primary,
+      alignSelf: "flex-start",
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 8,
+    },
+    badgeText: { color: "#fff", fontSize: 12, fontWeight: "600" },
+    heroRoute: {
+      marginTop: 12,
+      fontSize: 22,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    heroMeta: { marginTop: 4 },
+    heroDate: { color: colors.textSecondary, fontSize: 13 },
+    infoGrid: {
+      flexDirection: "row",
+      gap: 12,
+      paddingHorizontal: 16,
+    },
+    infoBox: {
+      flex: 1,
+      backgroundColor: colors.surface,
+      borderRadius: 16,
+      padding: 14,
+    },
+    infoLabel: { fontSize: 11, color: colors.textTertiary, fontWeight: "600" },
+    infoValue: {
+      marginTop: 4,
+      fontSize: 16,
+      fontWeight: "700",
+      color: colors.text,
+    },
+    boardingHeader: {
+      marginTop: 24,
+      paddingHorizontal: 16,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    boardingTitle: { fontSize: 16, fontWeight: "700", color: colors.text },
+    boardingSubtitle: { fontSize: 13, color: colors.textSecondary },
+    boardingCount: { fontSize: 22, fontWeight: "700", color: colors.primary },
+    boardingTotal: { fontSize: 14, color: colors.textTertiary },
+    progressBar: {
+      height: 8,
+      backgroundColor: colors.border,
+      borderRadius: 999,
+      marginHorizontal: 16,
+      marginTop: 8,
+    },
+    progressFill: {
+      height: "100%",
+      backgroundColor: colors.primary,
+      borderRadius: 999,
+    },
+    searchBox: {
+      margin: 16,
+      backgroundColor: colors.surface,
+      borderRadius: 14,
+      paddingHorizontal: 12,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    searchInput: {
+      flex: 1,
+      height: 48,
+      color: colors.text,
+    },
+    passengerCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 14,
+      marginHorizontal: 16,
+      marginBottom: 8,
+      borderRadius: 16,
+      backgroundColor: colors.background,
+      borderWidth: 1,
+      borderColor: colors.border,
+      elevation: 1,
+    },
+    avatar: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.surfaceSecondary,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 12,
+    },
+    avatarChecked: { backgroundColor: colors.successLight },
+    passengerName: { fontWeight: "600", color: colors.text },
+    passengerSeat: { fontSize: 12, color: colors.textSecondary },
+    statusBadge: {
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 999,
+    },
+    statusBoarded: { backgroundColor: colors.successLight },
+    statusPending: { backgroundColor: colors.border },
+    statusText: { fontSize: 12, fontWeight: "700" },
+    statusBoardedText: { color: colors.success },
+    statusPendingText: { color: colors.textSecondary },
+    empty: {
+      textAlign: "center",
+      marginTop: 40,
+      color: colors.textSecondary,
+    },
+    cta: {
+      position: "absolute",
+      bottom: 16,
+      left: 16,
+      right: 16,
+    },
+    ctaButton: {
+      height: 56,
+      backgroundColor: colors.primaryDark,
+      borderRadius: 16,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 10,
+      elevation: 6,
+    },
+    ctaText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  });
+
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#2563eb" />
+      <View style={dynamicStyles.center}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={dynamicStyles.container}>
       {/* APP BAR */}
-      <View style={styles.appBar}>
+      <View style={dynamicStyles.appBar}>
         <Pressable onPress={() => router.back()}>
-          <Feather name="arrow-left" size={22} color="#374151" />
+          <Feather name="arrow-left" size={22} color={colors.iconPrimary} />
         </Pressable>
 
-        <Text style={styles.appBarTitle}>Detalles del viaje</Text>
+        <Text style={dynamicStyles.appBarTitle}>Detalles del viaje</Text>
 
         <Pressable onPress={() => loadData(true)}>
-          <Feather name="refresh-cw" size={20} color="#2563eb" />
+          <Feather name="refresh-cw" size={20} color={colors.primary} />
         </Pressable>
       </View>
 
@@ -115,118 +273,124 @@ export default function TravelDetailScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => loadData(true)}
-            colors={["#2563eb"]}
-            tintColor="#2563eb"
+            colors={[colors.primary]}
+            tintColor={colors.primary}
           />
         }
         ListHeaderComponent={
           <>
             {/* HERO */}
-            <View style={styles.heroCard}>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>
+            <View style={dynamicStyles.heroCard}>
+              <View style={dynamicStyles.badge}>
+                <Text style={dynamicStyles.badgeText}>
                   {travel?.type_service?.toUpperCase() || "SERVICIO"}
                 </Text>
               </View>
 
-              <Text style={styles.heroRoute}>
+              <Text style={dynamicStyles.heroRoute}>
                 {travel?.location_departure} – {travel?.location_arrival}
               </Text>
 
-              <View style={styles.heroMeta}>
-                <Text style={styles.heroDate}>
+              <View style={dynamicStyles.heroMeta}>
+                <Text style={dynamicStyles.heroDate}>
                   {formatDateDDMMYYYY(travel?.date)}
                 </Text>
               </View>
             </View>
 
             {/* INFO */}
-            <View style={styles.infoGrid}>
-              <View style={styles.infoBox}>
-                <Text style={styles.infoLabel}>ID DEL VEHÍCULO</Text>
-                <Text style={styles.infoValue}>
+            <View style={dynamicStyles.infoGrid}>
+              <View style={dynamicStyles.infoBox}>
+                <Text style={dynamicStyles.infoLabel}>ID DEL VEHÍCULO</Text>
+                <Text style={dynamicStyles.infoValue}>
                   {travel?.vehicle_name || "No disponible"}
                 </Text>
               </View>
 
-              <View style={styles.infoBox}>
-                <Text style={styles.infoLabel}>CONDUCTOR</Text>
-                <Text style={styles.infoValue}>
+              <View style={dynamicStyles.infoBox}>
+                <Text style={dynamicStyles.infoLabel}>CONDUCTOR</Text>
+                <Text style={dynamicStyles.infoValue}>
                   {travel?.driver_name || "No disponible"}
                 </Text>
               </View>
             </View>
 
             {/* BOARDING STATUS */}
-            <View style={styles.boardingHeader}>
+            <View style={dynamicStyles.boardingHeader}>
               <View>
-                <Text style={styles.boardingTitle}>Estado de abordaje</Text>
-                <Text style={styles.boardingSubtitle}>
+                <Text style={dynamicStyles.boardingTitle}>
+                  Estado de abordaje
+                </Text>
+                <Text style={dynamicStyles.boardingSubtitle}>
                   {total - boardedCount} pasajeros pendientes
                 </Text>
               </View>
 
-              <Text style={styles.boardingCount}>
+              <Text style={dynamicStyles.boardingCount}>
                 {boardedCount}
-                <Text style={styles.boardingTotal}>/{total}</Text>
+                <Text style={dynamicStyles.boardingTotal}>/{total}</Text>
               </Text>
             </View>
 
-            <View style={styles.progressBar}>
+            <View style={dynamicStyles.progressBar}>
               <View
-                style={[styles.progressFill, { width: `${progress * 100}%` }]}
+                style={[
+                  dynamicStyles.progressFill,
+                  { width: `${progress * 100}%` },
+                ]}
               />
             </View>
 
             {/* SEARCH */}
-            <View style={styles.searchBox}>
-              <Feather name="search" size={18} color="#9ca3af" />
+            <View style={dynamicStyles.searchBox}>
+              <Feather name="search" size={18} color={colors.textTertiary} />
               <TextInput
                 placeholder="Buscar nombre o número de asiento..."
                 value={search}
                 onChangeText={setSearch}
-                style={styles.searchInput}
+                placeholderTextColor={colors.textTertiary}
+                style={dynamicStyles.searchInput}
               />
             </View>
           </>
         }
         contentContainerStyle={{ paddingBottom: 140 }}
         renderItem={({ item }) => (
-          <View style={styles.passengerCard}>
+          <View style={dynamicStyles.passengerCard}>
             <View
               style={[
-                styles.avatar,
-                item.boarding_status && styles.avatarChecked,
+                dynamicStyles.avatar,
+                item.boarding_status && dynamicStyles.avatarChecked,
               ]}
             >
               {item.boarding_status ? (
-                <Feather name="check" size={16} color="#22c55e" />
+                <Feather name="check" size={16} color={colors.success} />
               ) : (
-                <Feather name="user" size={16} color="#9ca3af" />
+                <Feather name="user" size={16} color={colors.textTertiary} />
               )}
             </View>
 
             <View style={{ flex: 1 }}>
-              <Text style={styles.passengerName}>{item.full_name}</Text>
-              <Text style={styles.passengerSeat}>
+              <Text style={dynamicStyles.passengerName}>{item.full_name}</Text>
+              <Text style={dynamicStyles.passengerSeat}>
                 Asiento: {item.seat_number}
               </Text>
             </View>
 
             <View
               style={[
-                styles.statusBadge,
+                dynamicStyles.statusBadge,
                 item.boarding_status
-                  ? styles.statusBoarded
-                  : styles.statusPending,
+                  ? dynamicStyles.statusBoarded
+                  : dynamicStyles.statusPending,
               ]}
             >
               <Text
                 style={[
-                  styles.statusText,
+                  dynamicStyles.statusText,
                   item.boarding_status
-                    ? styles.statusBoardedText
-                    : styles.statusPendingText,
+                    ? dynamicStyles.statusBoardedText
+                    : dynamicStyles.statusPendingText,
                 ]}
               >
                 {item.boarding_status ? "ABORDADO" : "PENDIENTE"}
@@ -235,167 +399,20 @@ export default function TravelDetailScreen() {
           </View>
         )}
         ListEmptyComponent={
-          <Text style={styles.empty}>No se encontraron pasajeros</Text>
+          <Text style={dynamicStyles.empty}>No se encontraron pasajeros</Text>
         }
       />
 
       {/* CTA */}
-      <View style={styles.cta}>
+      <View style={dynamicStyles.cta}>
         <Pressable
-          style={styles.ctaButton}
+          style={dynamicStyles.ctaButton}
           onPress={() => router.push(`/boarding/${travelId}/scan`)}
         >
           <MaterialIcons name="qr-code-scanner" size={22} color="#fff" />
-          <Text style={styles.ctaText}>Iniciar abordaje</Text>
+          <Text style={dynamicStyles.ctaText}>Iniciar abordaje</Text>
         </Pressable>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-
-  appBar: {
-    height: 56,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderBottomWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  appBarTitle: { fontSize: 16, fontWeight: "600" },
-
-  heroCard: {
-    backgroundColor: "#f8fafc",
-    margin: 16,
-    borderRadius: 20,
-    padding: 16,
-  },
-  badge: {
-    backgroundColor: "#2563eb",
-    alignSelf: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  badgeText: { color: "#fff", fontSize: 12, fontWeight: "600" },
-  heroRoute: {
-    marginTop: 12,
-    fontSize: 22,
-    fontWeight: "700",
-  },
-  heroMeta: { marginTop: 4 },
-  heroDate: { color: "#6b7280", fontSize: 13 },
-
-  infoGrid: {
-    flexDirection: "row",
-    gap: 12,
-    paddingHorizontal: 16,
-  },
-  infoBox: {
-    flex: 1,
-    backgroundColor: "#f8fafc",
-    borderRadius: 16,
-    padding: 14,
-  },
-  infoLabel: { fontSize: 11, color: "#9ca3af", fontWeight: "600" },
-  infoValue: { marginTop: 4, fontSize: 16, fontWeight: "700" },
-
-  boardingHeader: {
-    marginTop: 24,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  boardingTitle: { fontSize: 16, fontWeight: "700" },
-  boardingSubtitle: { fontSize: 13, color: "#6b7280" },
-  boardingCount: { fontSize: 22, fontWeight: "700", color: "#2563eb" },
-  boardingTotal: { fontSize: 14, color: "#9ca3af" },
-
-  progressBar: {
-    height: 8,
-    backgroundColor: "#e5e7eb",
-    borderRadius: 999,
-    marginHorizontal: 16,
-    marginTop: 8,
-  },
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#2563eb",
-    borderRadius: 999,
-  },
-
-  searchBox: {
-    margin: 16,
-    backgroundColor: "#f8fafc",
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  searchInput: { flex: 1, height: 48 },
-
-  passengerCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 14,
-    marginHorizontal: 16,
-    marginBottom: 8,
-    borderRadius: 16,
-    backgroundColor: "#fff",
-    elevation: 1,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#f3f4f6",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  avatarChecked: { backgroundColor: "#dcfce7" },
-
-  passengerName: { fontWeight: "600" },
-  passengerSeat: { fontSize: 12, color: "#6b7280" },
-
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-  statusBoarded: { backgroundColor: "#dcfce7" },
-  statusPending: { backgroundColor: "#e5e7eb" },
-  statusText: { fontSize: 12, fontWeight: "700" },
-  statusBoardedText: { color: "#16a34a" },
-  statusPendingText: { color: "#6b7280" },
-
-  empty: {
-    textAlign: "center",
-    marginTop: 40,
-    color: "#6b7280",
-  },
-
-  cta: {
-    position: "absolute",
-    bottom: 16,
-    left: 16,
-    right: 16,
-  },
-  ctaButton: {
-    height: 56,
-    backgroundColor: "#1d4ed8",
-    borderRadius: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    elevation: 6,
-  },
-  ctaText: { color: "#fff", fontSize: 16, fontWeight: "700" },
-});

@@ -7,9 +7,11 @@ import TravelCard from "../../domains/boarding/components/TravelCard";
 import TravelCardSkeleton from "../../shared/components/TravelCardSkeleton";
 import { BoardingHeader } from "../../domains/boarding/components/BoardingHeader";
 import SearchInput from "../../shared/components/SearchInput";
+import { useTheme } from "../../shared/hooks/useTheme";
 import { Feather } from "@expo/vector-icons";
 
 export default function BoardingScreen() {
+  const { colors } = useTheme();
   const [listTravels, setListTravels] = useState([]);
 
   const [loading, setLoading] = useState(false);
@@ -55,8 +57,28 @@ export default function BoardingScreen() {
     loadTravels();
   }, []);
 
+  const dynamicStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    list: {
+      padding: 16,
+      paddingBottom: 100,
+      backgroundColor: colors.surface,
+    },
+    emptyContainer: {
+      marginTop: 60,
+      alignItems: "center",
+    },
+    emptyText: {
+      color: colors.textSecondary,
+      marginTop: 8,
+    },
+  });
+
   return (
-    <View style={{ flex: 1 }}>
+    <View style={dynamicStyles.container}>
       <BoardingHeader onRefresh={loadTravels} />
 
       <FlatList
@@ -66,13 +88,13 @@ export default function BoardingScreen() {
           <SearchInput value={search} onChange={setSearch} />
         }
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={dynamicStyles.list}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => loadTravels(true)}
-            colors={["#2563eb"]}
-            tintColor="#2563eb"
+            colors={[colors.primary]}
+            tintColor={colors.primary}
           />
         }
         renderItem={({ item }) =>
@@ -87,9 +109,9 @@ export default function BoardingScreen() {
         }
         ListEmptyComponent={
           !loading && (
-            <View style={{ marginTop: 60, alignItems: "center" }}>
-              <Feather name="search" size={32} color="#d1d5db" />
-              <Text style={{ marginTop: 8, color: "#6b7280" }}>
+            <View style={dynamicStyles.emptyContainer}>
+              <Feather name="search" size={32} color={colors.iconSecondary} />
+              <Text style={dynamicStyles.emptyText}>
                 No se encontraron viajes
               </Text>
             </View>
@@ -99,20 +121,3 @@ export default function BoardingScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  list: {
-    padding: 16,
-    paddingBottom: 100,
-    backgroundColor: "#f8fafc", // 👈 clave visual
-  },
-
-  empty: {
-    alignItems: "center",
-    marginTop: 80,
-  },
-
-  emptyText: {
-    color: "#6b7280",
-  },
-});

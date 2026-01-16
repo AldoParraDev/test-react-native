@@ -15,6 +15,7 @@ import {
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../../domains/auth/auth.store";
 import { loginSession } from "../../domains/auth/auth.service";
+import { useTheme } from "../../shared/hooks/useTheme";
 import { router } from "expo-router";
 import { showMessage } from "../../shared/utils/showMessage";
 import { Feather } from "@expo/vector-icons";
@@ -29,6 +30,7 @@ if (
 
 export default function LoginPage() {
   const login = useAuthStore((s) => s.login);
+  const { colors } = useTheme();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -89,13 +91,16 @@ export default function LoginPage() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={[{ flex: 1 }, { backgroundColor: colors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
     >
       <Pressable style={{ flex: 1 }} onPress={Keyboard.dismiss}>
         <ScrollView
-          contentContainerStyle={styles.container}
+          contentContainerStyle={[
+            styles.container,
+            { backgroundColor: colors.background },
+          ]}
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="on-drag"
         >
@@ -103,23 +108,44 @@ export default function LoginPage() {
             source={require("../../assets/icon.png")}
             style={styles.logo}
           />
-          <Text style={styles.title}>Inicio de sesión</Text>
+          <Text style={[styles.title, { color: colors.text }]}>
+            Inicio de sesión
+          </Text>
 
           <TextInput
             placeholder="Nombre de usuario"
             value={username}
-            onChangeText={setUsername}
+            onChangeText={(text) => setUsername(text.toLowerCase())}
             autoCapitalize="none"
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                color: colors.text,
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+                placeholderTextColor: colors.textTertiary,
+              },
+            ]}
+            placeholderTextColor={colors.textTertiary}
           />
 
           <View style={styles.passwordContainer}>
             <TextInput
               placeholder="Contraseña"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(text) => setPassword(text.toLowerCase())}
               secureTextEntry={!showPassword}
-              style={styles.passwordInput}
+              autoCapitalize="none"
+              style={[
+                styles.passwordInput,
+                {
+                  color: colors.text,
+                  borderColor: colors.border,
+                  backgroundColor: colors.surface,
+                  placeholderTextColor: colors.textTertiary,
+                },
+              ]}
+              placeholderTextColor={colors.textTertiary}
             />
 
             <Pressable
@@ -129,7 +155,7 @@ export default function LoginPage() {
               <Feather
                 name={showPassword ? "eye" : "eye-off"}
                 size={18}
-                color={showPassword ? "#2563eb" : "#666"}
+                color={showPassword ? colors.primary : colors.textSecondary}
               />
             </Pressable>
           </View>
@@ -170,7 +196,6 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
     padding: 12,
     borderRadius: 14,
     marginBottom: 12,
@@ -181,7 +206,6 @@ const styles = StyleSheet.create({
   },
   passwordInput: {
     borderWidth: 1,
-    borderColor: "#ccc",
     padding: 12,
     paddingRight: 44, // espacio para el icono
     borderRadius: 14,

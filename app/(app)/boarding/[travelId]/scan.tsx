@@ -12,6 +12,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { useEffect, useRef, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTheme } from "../../../../shared/hooks/useTheme";
 
 import { Audio } from "expo-av";
 import {
@@ -32,10 +33,12 @@ interface ModalState {
 
 export default function ScanScreen() {
   const { travelId } = useLocalSearchParams<{ travelId: string }>();
+  const { colors } = useTheme();
 
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [torch, setTorch] = useState(false);
+  const [facing, setFacing] = useState<"front" | "back">("back");
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [modal, setModal] = useState<ModalState | null>(null);
   const [loading, setLoading] = useState(false);
@@ -90,11 +93,14 @@ export default function ScanScreen() {
 
   if (!permission.granted) {
     return (
-      <View style={styles.center}>
-        <Text style={{ marginBottom: 12 }}>
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <Text style={{ marginBottom: 12, color: colors.text }}>
           Necesitamos permiso para usar la cámara
         </Text>
-        <Pressable style={styles.permissionBtn} onPress={requestPermission}>
+        <Pressable
+          style={[styles.permissionBtn, { backgroundColor: colors.primary }]}
+          onPress={requestPermission}
+        >
           <Text style={{ color: "#fff" }}>Dar permiso</Text>
         </Pressable>
       </View>
@@ -149,8 +155,6 @@ export default function ScanScreen() {
         response.data.data.passenger_id
       );
 
-      console.log("Datos del pasajero::", passengerResponse);
-
       setLoading(false);
 
       if (!passengerResponse.success) {
@@ -193,23 +197,42 @@ export default function ScanScreen() {
         barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
         onBarcodeScanned={handleBarcodeScanned}
         enableTorch={torch}
+        facing={facing}
       />
 
       {/* APP BAR */}
-      <View style={styles.appBar}>
+      <View
+        style={[
+          styles.appBar,
+          { backgroundColor: colors.background, borderColor: colors.border },
+        ]}
+      >
         <Pressable onPress={() => router.back()}>
-          <Feather name="arrow-left" size={22} color="#374151" />
+          <Feather name="arrow-left" size={22} color={colors.iconPrimary} />
         </Pressable>
 
-        <Text style={styles.appBarTitle}>Escanear boleto</Text>
+        <Text style={[styles.appBarTitle, { color: colors.text }]}>
+          Escanear boleto
+        </Text>
 
-        <Pressable onPress={() => setTorch(!torch)}>
-          <MaterialCommunityIcons
-            name={torch ? "flashlight-off" : "flashlight"}
-            size={22}
-            color="#374151"
-          />
-        </Pressable>
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          <Pressable
+            onPress={() => setFacing(facing === "back" ? "front" : "back")}
+          >
+            <MaterialCommunityIcons
+              name={facing === "back" ? "camera-front" : "camera-rear"}
+              size={22}
+              color={colors.iconPrimary}
+            />
+          </Pressable>
+          <Pressable onPress={() => setTorch(!torch)}>
+            <MaterialCommunityIcons
+              name={torch ? "flashlight-off" : "flashlight"}
+              size={22}
+              color={colors.iconPrimary}
+            />
+          </Pressable>
+        </View>
       </View>
 
       {/* OVERLAY */}
@@ -238,9 +261,13 @@ export default function ScanScreen() {
 
       {loading && (
         <View style={styles.loaderOverlay}>
-          <View style={styles.loaderCard}>
-            <ActivityIndicator size="large" color="#22c55e" />
-            <Text style={styles.loaderText}>{loadingText}</Text>
+          <View
+            style={[styles.loaderCard, { backgroundColor: colors.surface }]}
+          >
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={[styles.loaderText, { color: colors.text }]}>
+              {loadingText}
+            </Text>
           </View>
         </View>
       )}
@@ -248,7 +275,9 @@ export default function ScanScreen() {
       {/* MODAL RESULTADO */}
       <Modal visible={!!modal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+          <View
+            style={[styles.modalCard, { backgroundColor: colors.background }]}
+          >
             {/* ICONO */}
             <View
               style={[
@@ -272,7 +301,9 @@ export default function ScanScreen() {
             </View>
 
             {/* TITULO */}
-            <Text style={styles.modalTitle}>{modal?.title}</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
+              {modal?.title}
+            </Text>
 
             {/* SUBTITULO */}
             <Text style={styles.modalSubtitle}>
@@ -285,8 +316,13 @@ export default function ScanScreen() {
 
             {/* PASAJERO */}
             {modal?.passenger && (
-              <View style={styles.passengerCard}>
-                <Text style={styles.passengerName}>
+              <View
+                style={[
+                  styles.passengerCard,
+                  { backgroundColor: colors.surface },
+                ]}
+              >
+                <Text style={[styles.passengerName, { color: colors.text }]}>
                   {modal.passenger.full_name}
                 </Text>
 
@@ -304,11 +340,18 @@ export default function ScanScreen() {
 
             {/* MENSAJE ERROR */}
             {modal?.message && (
-              <Text style={styles.modalMessage}>{modal.message}</Text>
+              <Text
+                style={[styles.modalMessage, { color: colors.textSecondary }]}
+              >
+                {modal.message}
+              </Text>
             )}
 
             {/* BOTON */}
-            <Pressable style={styles.modalBtn} onPress={closeModal}>
+            <Pressable
+              style={[styles.modalBtn, { backgroundColor: colors.primary }]}
+              onPress={closeModal}
+            >
               <Text style={styles.modalBtnText}>Aceptar →</Text>
             </Pressable>
           </View>
@@ -410,7 +453,6 @@ const styles = StyleSheet.create({
 
   modalCard: {
     width: "85%",
-    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 24,
     alignItems: "center",
@@ -446,8 +488,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     borderBottomWidth: 1,
-    borderColor: "#e5e7eb",
-    backgroundColor: "#fff",
     zIndex: 10,
   },
   appBarTitle: { fontSize: 16, fontWeight: "600" },
@@ -472,7 +512,6 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   loaderCard: {
-    backgroundColor: "#fff",
     paddingVertical: 28,
     paddingHorizontal: 32,
     borderRadius: 20,
@@ -483,7 +522,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     fontWeight: "500",
-    color: "#374151",
     textAlign: "center",
   },
   modalHeader: {
@@ -547,12 +585,10 @@ const styles = StyleSheet.create({
   modalMessage: {
     fontSize: 15,
     textAlign: "center",
-    color: "#374151",
     marginBottom: 16,
   },
   modalBtn: {
     marginTop: 8,
-    backgroundColor: "#22c55e",
     width: "100%",
     paddingVertical: 14,
     borderRadius: 14,
