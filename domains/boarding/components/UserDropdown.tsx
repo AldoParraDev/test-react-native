@@ -13,6 +13,7 @@ import { useAuthStore } from "../../auth/auth.store";
 import { useTheme } from "../../../shared/hooks/useTheme";
 import { ThemeSwitcher } from "../../../shared/components/ThemeSwitcher";
 import { router } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export function UserDropdown() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -20,6 +21,8 @@ export function UserDropdown() {
   const logout = useAuthStore((state: any) => state.logout);
   // Animación para deslizar desde la izquierda
   const slideAnim = useRef(new Animated.Value(-500)).current;
+
+  const insets = useSafeAreaInsets();
 
   // Animar entrada y salida
   useEffect(() => {
@@ -71,8 +74,6 @@ export function UserDropdown() {
       paddingBottom: 12,
       paddingLeft: 16,
       paddingRight: 16,
-      // borderTopLeftRadius: 24,
-      // borderBottomLeftRadius: 24,
       elevation: 12,
       shadowColor: "#000",
       shadowOffset: { width: -4, height: 0 },
@@ -140,38 +141,49 @@ export function UserDropdown() {
         animationType="none"
         onRequestClose={handleClose}
       >
-        <Pressable style={dynamicStyles.backdrop} onPress={handleClose}>
-          <Animated.View
-            style={[
-              dynamicStyles.sheet,
-              {
-                transform: [{ translateX: slideAnim }],
-              },
-            ]}
-          >
-            {/* Header */}
-            <View style={dynamicStyles.sheetHeader}>
-              <Text style={dynamicStyles.sheetTitle}>Menú</Text>
-              <Pressable
-                style={dynamicStyles.closeButton}
-                onPress={handleClose}
-              >
-                <Feather name="x" size={24} color={colors.textSecondary} />
-              </Pressable>
-            </View>
+        <View
+          style={{
+            flex: 1,
+            marginTop: insets.top,
+            marginBottom: insets.bottom,
+          }}
+        >
+          <Pressable style={dynamicStyles.backdrop} onPress={handleClose}>
+            <Animated.View
+              style={[
+                dynamicStyles.sheet,
+                {
+                  transform: [{ translateX: slideAnim }],
+                },
+              ]}
+            >
+              {/* Header */}
+              <View style={dynamicStyles.sheetHeader}>
+                <Text style={dynamicStyles.sheetTitle}>Menú</Text>
+                <Pressable
+                  style={dynamicStyles.closeButton}
+                  onPress={handleClose}
+                >
+                  <Feather name="x" size={24} color={colors.textSecondary} />
+                </Pressable>
+              </View>
 
-            {/* Content */}
-            <View style={dynamicStyles.sheetContent}>
-              <ThemeSwitcher onClose={handleClose} />
-              <View style={dynamicStyles.divider} />
+              {/* Content */}
+              <View style={dynamicStyles.sheetContent}>
+                <ThemeSwitcher onClose={handleClose} />
+                <View style={dynamicStyles.divider} />
 
-              <Pressable style={dynamicStyles.menuItem} onPress={handleLogout}>
-                <Feather name="log-out" size={18} color="#ef4444" />
-                <Text style={dynamicStyles.menuItemText}>Cerrar sesión</Text>
-              </Pressable>
-            </View>
-          </Animated.View>
-        </Pressable>
+                <Pressable
+                  style={dynamicStyles.menuItem}
+                  onPress={handleLogout}
+                >
+                  <Feather name="log-out" size={18} color="#ef4444" />
+                  <Text style={dynamicStyles.menuItemText}>Cerrar sesión</Text>
+                </Pressable>
+              </View>
+            </Animated.View>
+          </Pressable>
+        </View>
       </Modal>
     </>
   );
